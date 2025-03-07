@@ -14,16 +14,6 @@ struct CPU {
     y: Byte,
 
     flags: Byte, // We use byte type with bitwise operations for status flags
-                 /*
-                 Tutorial had each bit mapped out
-                 c: bit,
-                 z: bit,
-                 i: bit,
-                 d: bit,
-                 b: bit,
-                 v: bit,
-                 n: bit,
-                  */
 }
 
 impl Mem {
@@ -39,12 +29,17 @@ impl Mem {
     }
     //read 1 byte
     fn read_byte(&self, address: Word) -> Byte {
-        assert!(address < MAX_MEM as Word);
+        println!("Reading address: 0x{:04X} ({})", address, address);
+        assert!((address as usize) < MAX_MEM);
         self.data[address as usize]
     }
 
     fn write_byte(&mut self, address: Word, value: Byte) {
-        assert!(address < MAX_MEM as Word);
+        println!(
+            "Writing value: 0x{:02X} at address: 0x{:04X} ({})",
+            value, address, address
+        );
+        assert!((address as usize) < MAX_MEM);
         self.data[address as usize] = value;
     }
 }
@@ -69,14 +64,19 @@ impl CPU {
         }
     }
 
-    fn reset(&mut self, memory: &mut Mem) {
-        self.pc = 0xFFFC; // Hard coding to start at 0xFFFC, will want to read_word() later
+    fn reset(&mut self, memory: &Mem) {
+        self.pc = self.read_word(memory, 0xFFFC); // reading reset vector
         self.sp = 0xFF; // Stack pointer starts at 0xFF
         self.a = 0;
         self.x = 0;
         self.y = 0;
         self.flags = 0;
-        memory.initialize();
+    }
+
+    fn read_word(&self, memory: &Mem, address: Word) -> Word {
+        let low_byte: Word = memory.read_byte(address) as Word;
+        let high_byte: Word = memory.read_byte(address.wrapping_add(1)) as Word;
+        return (high_byte << 8) | low_byte;
     }
 
     fn print_status(&self) {
@@ -108,6 +108,8 @@ impl CPU {
                 self.pc >> 8,
                 self.pc & 0xFF
             );
+
+            
         }
     }
 }
@@ -118,8 +120,13 @@ fn main() {
     let mut cpu: CPU = CPU::new();
     println!("CPU and Memory Initialized");
 
+    mem.write_byte(0xFFFC, 0x00); // Low byte
+    mem.write_byte(0xFFFD, 0x80); // High byte -> 0x8000
+    mem.write_byte(0x8000, 0xA9); // LDA #$01
+    mem.write_byte(0x8001, 0x01);
+
     println!("Resetting CPU");
-    cpu.reset(&mut mem);
+    cpu.reset(&mem);
     println!("CPU Reset");
     println!("Printing CPU Status");
     cpu.print_status();
