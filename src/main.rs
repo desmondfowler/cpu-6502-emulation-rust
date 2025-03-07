@@ -69,6 +69,7 @@ impl CPU {
 
         memory.initialize();
     }
+    
     fn print_status(&self) {
         println!("Status:");
         println!(
