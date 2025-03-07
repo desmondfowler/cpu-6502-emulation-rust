@@ -149,5 +149,7 @@ fn main() {
 
     println!("Executing 2 cycles");
     cpu.execute(2, &mut mem);
+    println!("Printing CPU Status after execution");
+    cpu.print_status();
     println!("Rust 6502 Emulator End");
 }
