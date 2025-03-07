@@ -1,8 +1,6 @@
-// Following along with https://www.youtube.com/watch?v=qJgsuQoy9bc
-
 type Byte = u8;
 type Word = u16;
-const MAX_MEM:  usize  = 1024 * 64; // 65,536 bytes, 64Kb
+const MAX_MEM: usize = 1024 * 64; // 65,536 bytes, 64Kb
 
 struct Mem {
     data: Box<[Byte; MAX_MEM]>, // Using Box so it gets allocated on the heap and not the stack
@@ -28,7 +26,7 @@ struct CPU {
                   */
 }
 
-impl Mem{
+impl Mem {
     fn new() -> Mem {
         Mem {
             data: Box::new([0; MAX_MEM]), // Initialize 64Kb with zeroes
@@ -61,7 +59,7 @@ impl CPU {
         }
     }
 
-    fn reset(&mut self) {
+    fn reset(&mut self, memory: &mut Mem) {
         self.pc = 0xFFFC; // 6502 reset vector
         self.sp = 0xFF; // Stack pointer starts at 0xFF
         self.a = 0;
@@ -69,14 +67,30 @@ impl CPU {
         self.y = 0;
         self.flags = 0;
 
+        memory.initialize();
+    }
+    fn print_status(&self) {
+        println!("Status:");
+        println!(
+            "PC:\t0x{:04X} \nSP:\t0x{:02X} \na:\t0x{:02X} \nx:\t0x{:02X} \ny:\t0x{:02X} \nFlags:\t0x{:02X}",
+            self.pc, self.sp, self.a, self.x, self.y, self.flags
+        );
+    }
+
+    fn execute(cycles: u32, memory: &mut Mem) {
+
     }
 }
 
 fn main() {
+    println!("Rust 6502 Emulator Start");
     let mut mem = Mem::new();
     let mut cpu = CPU::new();
-
-    cpu.reset();
-    mem.initialize();
-    println!("PC: 0x{:04X}, SP: 0x{:02X}", cpu.pc, cpu.sp);
+    println!("CPU and Memory Initialized");
+    println!("Resetting CPU");
+    cpu.reset(&mut mem);
+    println!("CPU Reset");
+    println!("Printing CPU Status");
+    cpu.print_status();
+    println!("Rust 6502 Emulator End");
 }
