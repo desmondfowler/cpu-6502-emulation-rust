@@ -37,6 +37,16 @@ impl Mem {
             self.data[i] = 0;
         }
     }
+    //read 1 byte
+    fn read_byte(&self, address: Word) -> Byte {
+        assert!(address < MAX_MEM as Word);
+        self.data[address as usize]
+    }
+
+    fn write_byte(&mut self, address: Word, value: Byte) {
+        assert!(address < MAX_MEM as Word);
+        self.data[address as usize] = value;
+    }
 }
 
 impl CPU {
@@ -60,38 +70,61 @@ impl CPU {
     }
 
     fn reset(&mut self, memory: &mut Mem) {
-        self.pc = 0xFFFC; // 6502 reset vector
+        self.pc = 0xFFFC; // Hard coding to start at 0xFFFC, will want to read_word() later
         self.sp = 0xFF; // Stack pointer starts at 0xFF
         self.a = 0;
         self.x = 0;
         self.y = 0;
         self.flags = 0;
-
         memory.initialize();
     }
-    
+
     fn print_status(&self) {
         println!("Status:");
         println!(
-            "PC:\t0x{:04X} \nSP:\t0x{:02X} \na:\t0x{:02X} \nx:\t0x{:02X} \ny:\t0x{:02X} \nFlags:\t0x{:02X}",
-            self.pc, self.sp, self.a, self.x, self.y, self.flags
+            "PC:\t0b{:08b} {:08b} \nSP:\t0b{:08b} \na:\t0b{:08b} \nx:\t0b{:08b} \ny:\t0b{:08b} \nFlags:\t0b{:08b}",
+            self.pc >> 8,   // High byte
+            self.pc & 0xFF, // Low byte
+            self.sp,
+            self.a,
+            self.x,
+            self.y,
+            self.flags
         );
     }
+    fn fetch_byte(&mut self, cycles: &mut u32, memory: &Mem) -> Byte {
+        let data: Byte = memory.read_byte(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+        *cycles = cycles.wrapping_sub(1);
+        return data;
+    }
 
-    fn execute(cycles: u32, memory: &mut Mem) {
-
+    fn execute(&mut self, mut cycles: u32, memory: &mut Mem) {
+        while cycles > 0 {
+            let instruction: Byte = self.fetch_byte(&mut cycles, memory);
+            println!(
+                "Fetched instruction: 0b{:08b} at PC: 0b{:08b} {:08b}",
+                instruction,
+                self.pc >> 8,
+                self.pc & 0xFF
+            );
+        }
     }
 }
 
 fn main() {
     println!("Rust 6502 Emulator Start");
-    let mut mem = Mem::new();
-    let mut cpu = CPU::new();
+    let mut mem: Mem = Mem::new();
+    let mut cpu: CPU = CPU::new();
     println!("CPU and Memory Initialized");
+
     println!("Resetting CPU");
     cpu.reset(&mut mem);
     println!("CPU Reset");
     println!("Printing CPU Status");
     cpu.print_status();
+
+    println!("Executing 2 cycles");
+    cpu.execute(2, &mut mem);
     println!("Rust 6502 Emulator End");
 }
