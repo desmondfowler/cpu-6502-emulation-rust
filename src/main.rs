@@ -121,11 +121,12 @@ impl CPU {
             match instruction {
                 Self::INS_LDA_IM => {
                     let value: Byte = self.fetch_byte(&mut cycles, memory);
-                    self.a = value
+                    self.a = value;
+                    self.z = (A == 0);
+                    self.n = (A & 0b10000000) > 0
                 }
                 _ => println!("Unknown instruction: 0b{:08b}", instruction),
             }
-            {}
         }
     }
 }
