@@ -99,6 +99,19 @@ impl CPU {
         return data;
     }
 
+    // LDA opcodes
+    const INS_LDA_IM: Byte = 0xA9;
+    const INS_LDA_ZP: Byte = 0xA5;
+    const INS_LDA_ZPX: Byte = 0xB5;
+    const INS_LDA_AB: Byte = 0xAD;
+    const INS_LDA_ABX: Byte = 0xBD;
+    const INS_LDA_ABY: Byte = 0xB9;
+    const INS_LDA_IDX: Byte = 0xA9;
+    const INS_LDA_IDY: Byte = 0xA9;
+    
+    
+    
+
     fn execute(&mut self, mut cycles: u32, memory: &mut Mem) {
         while cycles > 0 {
             let instruction: Byte = self.fetch_byte(&mut cycles, memory);
@@ -108,8 +121,6 @@ impl CPU {
                 self.pc >> 8,
                 self.pc & 0xFF
             );
-
-            
         }
     }
 }
