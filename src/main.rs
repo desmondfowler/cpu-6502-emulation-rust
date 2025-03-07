@@ -122,8 +122,13 @@ impl CPU {
                 Self::INS_LDA_IM => {
                     let value: Byte = self.fetch_byte(&mut cycles, memory);
                     self.a = value;
-                    self.z = (A == 0);
-                    self.n = (A & 0b10000000) > 0
+                    self.flags &= !(Self::Z | Self::N); // Clear Z and N
+                    if value == 0 {
+                        self.flags |= Self::Z; //Set Z flag
+                    }
+                    if value & 0b00000001 != 0 {
+                        self.flags |= Self::N; //Set N flag
+                    }
                 }
                 _ => println!("Unknown instruction: 0b{:08b}", instruction),
             }
